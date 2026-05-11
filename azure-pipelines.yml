@@ -10,10 +10,20 @@ pool:
   vmImage: ubuntu-latest
 
 steps:
-- script: echo Hello, world!
-  displayName: 'Run a one-line script'
+- task: Maven@3
+  inputs:
+    mavenPomFile: 'artifact1/pom.xml'
+    mavenOptions: '-Xmx3072m'
+    javaHomeOption: 'JDKVersion'
+    jdkVersionOption: '17'  
+    jdkArchitectureOption: 'x64'
+    publishJUnitResults: true
+    testResultsFiles: '**/surefire-reports/TEST-*.xml'
+    goals: 'clean package'
 
-- script: |
-    echo Add other tasks to build, test, and deploy your project.
-    echo See https://aka.ms/yaml
-  displayName: 'Run a multi-line script'
+# Optional: publish artifact
+- task: PublishBuildArtifacts@1
+  inputs:
+    PathtoPublish: 'artifact1/target'
+    ArtifactName: 'drop'
+    publishLocation: 'Container'
