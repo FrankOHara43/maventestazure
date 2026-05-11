@@ -3,27 +3,25 @@
 # Add steps that build, run tests, deploy, and more:
 # https://aka.ms/yaml
 
-trigger:
-- main
-
-pool:
-  vmImage: ubuntu-latest
-
 steps:
 - task: Maven@3
   inputs:
     mavenPomFile: 'artifact1/pom.xml'
-    mavenOptions: '-Xmx3072m'
-    javaHomeOption: 'JDKVersion'
-    jdkVersionOption: '17'   # ✅ FIXED (was 1.11)
-    jdkArchitectureOption: 'x64'
-    publishJUnitResults: true
-    testResultsFiles: '**/surefire-reports/TEST-*.xml'
     goals: 'clean package'
+    # ... other inputs
 
-# Optional: publish artifact
+# 1. Copy the JAR and the POM to the staging directory
+- task: CopyFiles@2
+  inputs:
+    SourceFolder: 'artifact1'
+    Contents: |
+      target/*.jar
+      pom.xml
+    TargetFolder: '$(Build.ArtifactStagingDirectory)'
+
+# 2. Publish from the staging directory instead of /target
 - task: PublishBuildArtifacts@1
   inputs:
-    PathtoPublish: 'artifact1/target'
+    PathtoPublish: '$(Build.ArtifactStagingDirectory)'
     ArtifactName: 'drop'
     publishLocation: 'Container'
